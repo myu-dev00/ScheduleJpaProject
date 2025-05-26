@@ -1,5 +1,6 @@
 package org.example.schedulejpa.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.schedulejpa.domain.User;
 import org.example.schedulejpa.dto.UserLoginDto;
@@ -25,11 +26,12 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserLoginDto dto) {
+    public ResponseEntity<String> login(@RequestBody UserLoginDto dto, HttpServletRequest request) {
         User user = userRepository.findByEmail(dto.getEmail()).orElse(null);
         if (user == null || !user.checkPassword(dto.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
+        request.getSession().setAttribute("userId", user.getId());
         return ResponseEntity.ok("Login successful");
     }
 
