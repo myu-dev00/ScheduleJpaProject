@@ -21,6 +21,7 @@
 | Spring Web | REST API 제공 |
 | Spring Boot  | 개발 편의성 향상 |
 | JPA Auditing | 생성일/수정일 자동 처리 |
+| Session / Cookie | Session / Cookie 기반 인증 (Servlet Filter) |
 
 ---
 
@@ -29,40 +30,65 @@
 ```
 schedule/
 ├── controller/
-│   ├── ScheduleController.java       // 일정 관련 REST API
-│   └── UserController.java           // 회원가입, 로그인, 회원 삭제
+│ ├── ScheduleController.java // 일정 CRUD API
+│ └── UserController.java // 회원가입 / 로그인 API
+├── config/
+│ ├── AuthFilter.java // 인증 필터
+│ └── FilterConfig.java // 필터 등록 설정
 ├── domain/
-│   ├── Schedule.java                 // 일정 Entity
-│   └── User.java                     // 사용자 Entity
+│ ├── Schedule.java // 일정 Entity
+│ └── User.java // 유저 Entity
 ├── dto/
-│   ├── CreateScheduleRequestDto.java // 일정 등록 요청 DTO
-│   ├── ScheduleResponseDto.java      // 일정 응답 DTO
-│   ├── UserRequestDto.java           // 회원가입 요청 DTO
-│   └── UserLoginDto.java             // 로그인 및 삭제 요청 DTO
-├── entity/
-│   └── BaseEntity.java               // 생성일/수정일 자동 처리용 상위 Entity
+│ ├── CreateScheduleRequestDto.java
+│ ├── ScheduleResponseDto.java
+│ ├── UserRequestDto.java
+│ ├── UserLoginDto.java
+│ └── UserResponseDto.java
 ├── repository/
-│   ├── ScheduleRepository.java       // 일정 JPA 인터페이스
-│   └── UserRepository.java           // 사용자 JPA 인터페이스
+│ ├── ScheduleRepository.java
+│ └── UserRepository.java
 ├── service/
-│   └── ScheduleService.java          // 일정 서비스 로직
-└── ScheduleApplication.java          // 메인 애플리케이션
+│ ├── ScheduleService.java
+│ └── UserService.java
+└── entity/
+└── BaseEntity.java // createdAt, modifiedAt 자동 관리
 ```
 
 ---
 
 ## 📘 API 명세서
 
-| 기능 | 메서드 | 엔드포인트 | 설명 | 요청 예시 | 요청 Body | 응답 예시 |
-|------|--------|------------|------|-----------|------------|------------|
-| 회원가입 | POST | `/users/signup` | 사용자 등록 | - | `{ "username": "홍길동", "email": "hong@example.com", "password": "1234" }` | `201 Created` |
-| 로그인 | POST | `/users/login` | 사용자 인증 | - | `{ "email": "hong@example.com", "password": "1234" }` | `"Login successful"` or `401 Unauthorized` |
-| 사용자 삭제 | DELETE | `/users` | 사용자 인증 후 삭제 | - | `{ "email": "hong@example.com", "password": "1234" }` | `200 OK` or `401 Unauthorized` |
-| 일정 생성 | POST | `/schedules` | 일정 등록 | - | `{ "title": "스터디", "contents": "JPA 복습", "userId": 1 }` | 일정 정보 반환 |
-| 일정 전체 조회 | GET | `/schedules` | 모든 일정 목록 | - | - | 일정 목록 배열 |
-| 일정 단건 조회 | GET | `/schedules/{id}` | 특정 일정 보기 | `/schedules/1` | - | 일정 상세 정보 |
-| 일정 수정 | PUT | `/schedules/{id}` | 일정 제목/내용 수정 | `/schedules/1` | `{ "title": "수정", "contents": "내용 수정" }` | 수정된 일정 반환 |
-| 일정 삭제 | DELETE | `/schedules/{id}` | 특정 일정 삭제 | `/schedules/1` | - | `200 OK` |
+### ✅ 회원가입 / 로그인
+
+| 구분     | 메서드 | URI            | 설명       | Body 예시 |
+|----------|--------|----------------|------------|-----------|
+| 회원가입 | POST   | `/users/signup` | 유저 생성   | `{ "username": "chris", "email": "chris@example.com", "password": "1234" }` |
+| 로그인   | POST   | `/users/login`  | 세션 저장   | `{ "email": "chris@example.com", "password": "1234" }` |
+
+> 로그인 성공 시 서버 세션에 `userId` 저장됨
+
+
+### ✅ 일정 API
+
+| 구분     | 메서드 | URI              | 설명         | Body 예시 |
+|----------|--------|------------------|--------------|-----------|
+| 생성     | POST   | `/schedules`     | 일정 등록     | `{ "title": "회의", "contents": "10시 팀 회의", "userId": 1 }` |
+| 전체 조회 | GET    | `/schedules`     | 모든 일정 조회 | -         |
+| 단일 조회 | GET    | `/schedules/1`   | 특정 일정 조회 | -         |
+| 수정     | PUT    | `/schedules/1`   | 일정 수정     | `{ "title": "수정 제목", "contents": "변경된 내용" }` |
+| 삭제     | DELETE | `/schedules/1`   | 일정 삭제     | -         |
+
+
+### ✅ 유저 관리
+
+| 구분     | 메서드 | URI             | 설명             |
+|----------|--------|------------------|------------------|
+| 전체 조회 | GET    | `/users`         | 유저 전체 조회     |
+| 단일 조회 | GET    | `/users/{id}`    | 유저 상세 조회     |
+| 수정     | PUT    | `/users/{id}`    | 유저 정보 수정     |
+| 삭제     | DELETE | `/users`         | 로그인 상태 유저 삭제<br>비밀번호 확인 필요<br>`{ "email": "xx", "password": "xx" }` |
+
+
 
 ---
 
@@ -85,9 +111,7 @@ schedule/
 
 ## ✅ 주요 특징 및 구현 내용 요약
 
-- `@ManyToOne`, `@OneToMany`를 활용한 유저-일정 간 연관관계 구현
-- 삭제 시 `CascadeType.ALL`, `orphanRemoval = true` 적용으로 유저 삭제 시 일정도 함께 삭제됨
-- DTO를 통한 요청/응답 데이터 분리
-- `@CreatedDate`, `@LastModifiedDate`를 통한 일정 작성/수정일 자동 처리
-- 로그인 및 삭제 기능 시 이메일/비밀번호 일치 여부 확인 및 예외처리(401)
-- 코드 가독성과 유지보수를 고려한 레이어별 클래스 분리
+- JPA 기반 Entity 연관관계 및 Auditing 적용
+- 세션 기반 인증 구현 (Cookie/Session)
+- 유저 삭제 시 관련 일정도 자동 삭제 (`orphanRemoval = true`)
+- 구조화된 DTO 패턴과 예외 메시지 처리
