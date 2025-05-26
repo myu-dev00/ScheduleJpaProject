@@ -3,13 +3,13 @@ package org.example.schedulejpa.dto;
 import lombok.Getter;
 import org.example.schedulejpa.domain.Schedule;
 
-//응답
+//Schedule요청Dto
 @Getter
 public class ScheduleResponseDto {
-    private final Long id; //식별자
-    private final String title; //제목
-    private final String contents; //내용
-    private final String username; //유저명
+    private final Long id;
+    private final String title;
+    private final String contents;
+    private final String username;
 
     public ScheduleResponseDto(Long id, String title, String contents, String username) {
         this.id = id;
@@ -23,7 +23,7 @@ public class ScheduleResponseDto {
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContents(),
-                schedule.getUsername()
+                schedule.getUser().getUsername() //User의 Username을 가져옴.
         );
     }
 }

@@ -11,7 +11,6 @@ import org.example.schedulejpa.entity.BaseEntity;
 @Table(name = "schedule")
 public class Schedule extends BaseEntity {
 
-    //JPA
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,17 +21,17 @@ public class Schedule extends BaseEntity {
     @Column(nullable = false)
     private String contents;
 
-    @Column(nullable = false)
-    private String username;
+    //유저 ID로 연관관계 매핑
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    //생성자
-    public Schedule(String title, String contents, String username) {
+    public Schedule(String title, String contents, User user) {
         this.title = title;
         this.contents = contents;
-        this.username = username;
+        this.user = user;
     }
 
-    //수정 데이터
     public void update(String title, String contents) {
         this.title = title;
         this.contents = contents;
