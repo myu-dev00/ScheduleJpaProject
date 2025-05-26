@@ -2,7 +2,6 @@ package org.example.schedulejpa.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.schedulejpa.domain.Schedule;
-import org.example.schedulejpa.dto.CreateScheduleRequestDto;
 import org.example.schedulejpa.dto.ScheduleResponseDto;
 import org.example.schedulejpa.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;

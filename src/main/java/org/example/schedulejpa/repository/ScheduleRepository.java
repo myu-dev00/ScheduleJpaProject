@@ -5,8 +5,6 @@ import org.example.schedulejpa.domain.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
-
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     //예외처리
