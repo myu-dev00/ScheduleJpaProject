@@ -2,10 +2,9 @@ package org.example.schedulejpa.dto;
 
 import lombok.Getter;
 
-//User요청Dto
+//로그인Dto
 @Getter
-public class UserRequestDto {
-    private String username;
+public class UserLoginDto {
     private String email;
     private String password;
 }

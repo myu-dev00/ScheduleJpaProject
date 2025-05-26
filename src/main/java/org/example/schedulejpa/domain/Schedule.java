@@ -21,7 +21,6 @@ public class Schedule extends BaseEntity {
     @Column(nullable = false)
     private String contents;
 
-    //유저 ID로 연관관계 매핑
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

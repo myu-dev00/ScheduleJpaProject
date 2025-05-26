@@ -1,9 +1,10 @@
 package org.example.schedulejpa.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.schedulejpa.domain.User;
+import org.example.schedulejpa.dto.UserLoginDto;
 import org.example.schedulejpa.dto.UserRequestDto;
-import org.example.schedulejpa.dto.UserResponseDto;
-import org.example.schedulejpa.service.UserService;
+import org.example.schedulejpa.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,36 +12,36 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    @PostMapping
-    public ResponseEntity<UserResponseDto> create(@RequestBody UserRequestDto dto) {
-        return new ResponseEntity<>(userService.create(dto), HttpStatus.CREATED);
+    @PostMapping("/signup")
+    public ResponseEntity<Void> signup(@RequestBody UserRequestDto dto) {
+        User user = new User(dto.getUsername(), dto.getEmail(), dto.getPassword());
+        userRepository.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> findAll() {
-        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody UserLoginDto dto) {
+        User user = userRepository.findByEmail(dto.getEmail()).orElse(null);
+        if (user == null || !user.checkPassword(dto.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        }
+        return ResponseEntity.ok("Login successful");
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> findById(@PathVariable Long id) {
-        return new ResponseEntity<>(userService.findById(id), HttpStatus.OK);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @RequestBody UserRequestDto dto) {
-        return new ResponseEntity<>(userService.update(id, dto), HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.delete(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @DeleteMapping
+    public ResponseEntity<Void> delete(@RequestBody UserLoginDto dto) {
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        if (!user.checkPassword(dto.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        userRepository.delete(user);
+        return ResponseEntity.ok().build();
     }
 }
-

@@ -17,39 +17,39 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    //User 생성
+    // 회원가입
     public UserResponseDto create(UserRequestDto dto) {
-        User user = new User(dto.getUsername(), dto.getEmail());
+        User user = new User(dto.getUsername(), dto.getEmail(), dto.getPassword());
         return UserResponseDto.from(userRepository.save(user));
     }
 
-    //User 전체조회
+    // 전체 조회
     public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream()
                 .map(UserResponseDto::from)
                 .collect(Collectors.toList());
     }
 
-    //User 단건조회
+    // 단건 조회
     public UserResponseDto findById(Long id) {
-        return userRepository.findById(id)
-                .map(UserResponseDto::from)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다. ID = " + id));
-    }
-
-    //User 수정
-    @Transactional
-    public UserResponseDto update(Long id, UserRequestDto dto) {
-        User user = userRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("해당 유저가 존재하지 않습니다. ID = " + id));
-        user.update(dto.getUsername(), dto.getEmail());
         return UserResponseDto.from(user);
     }
 
-    //User delete
+    // 수정
+    @Transactional
+    public UserResponseDto update(Long id, UserRequestDto dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다. ID = " + id));
+        user.update(dto.getUsername(), dto.getEmail(), dto.getPassword());
+        return UserResponseDto.from(user);
+    }
+
+    // 삭제
     public void delete(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("해당 유저가 존재하지 않습니다. ID = " + id));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다. ID = " + id));
         userRepository.delete(user);
     }
 }
